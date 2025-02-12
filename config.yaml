@@ -3,7 +3,7 @@
 # General run options ----
 
 # Specify the filepath of the SyncroSim library
-libraryFilepath: "C:\\gitprojects\\A328\\Library\\wisdm-example.ssim"
+libraryPath: "C:\\gitprojects\\A328\\Library\\wisdm-example.ssim"
 
 # SyncroSim installation location
 # - Leave blank to use default location
@@ -19,79 +19,64 @@ templateScenarioId: 1
 
 ## Boosted Regression Tree parameter values ----
 
-# Choose the fitting method
-# Leave blank to use the value in the template scenario, or:
-# 0 = Use defaults and tuning
-# 1 = Use values provided below
-fittingMethod: 1
-
-# A list of values to test for the learning rate
-learningRate:
-# - Leave blank to use the value in the template scenario
-
-# A list of values to test for the number of trees added per stage
-numberOfTreesAddedPerStage:
-# - Leave blank to use the value in the template scenario
-
-# A list of values to test for the bag fraction
-bagFraction:
-# - Leave blank to use the value in the template scenario
-
-# A list of values to test for the maximum number of trees
-maximumNumberOfTrees:
-# - Leave blank to use the value in the template scenario
+wisdm_BRT:
+  # Choose the fitting method
+  # Leave blank to use the value in the template scenario, or:
+  # 0 = Use defaults and tuning
+  # 1 = Use values provided below
+  - fittingMethod: [1]
+  
+  # A list of values to test for the learning rate
+  # - Leave blank to use the value in the template scenario
+  - learningRate: []
+  
+  # A list of values to test for the number of trees added per stage
+  # - Leave blank to use the value in the template scenario
+  - numberOfTrees: [1,2]
+  
+  # A list of values to test for the bag fraction
+  # - Leave blank to use the value in the template scenario
+  - bagFraction: []
+  
+  # A list of values to test for the maximum number of trees
+  # - Leave blank to use the value in the template scenario
+  - maximumTrees: [1,2,3]
 
 ## Random Forest parameter values ----
 
-# Evaluate covariate importance? (boolean - input must be TRUE, FALSE, or both)
-evaluateCovariateImportance:
-# - Leave blank to use the value in the template scenario
-# - TRUE
-# - FALSE
-
-# Calculate casewise importance? (boolean - input must be TRUE, FALSE, or both)
-calculateCasewiseImportance:
-# - Leave blank to use the value in the template scenario
-# - TRUE
-# - FALSE
-
-# A list of values to test for the number of variables sampled at split 
-numberOfVariablesSampled:
-# - Leave blank to use the value in the template scenario
-  - 5
-  - 6
+wisdm_RF:
+  # Evaluate covariate importance? (boolean - input must be true, false, or both)
+  # - Leave blank to use the value in the template scenario
+  - evaluateCovariateImportance: [true]
   
-# A list of values to test for the maximum number of nodes
-maximumNodes:
-# - Leave blank to use the value in the template scenario
+  # Calculate casewise importance? (boolean - input must be true, false, or both)
+  # - Leave blank to use the value in the template scenario
+  - calculateCasewiseImportance: []
 
-
-# A list of values to test for the number of trees
-numberOfTrees:
-# - Leave blank to use the value in the template scenario
-  - 1000
-  - 500
-
-# A list of values to test for the node size
-nodeSize:
-# - Leave blank to use the value in the template scenario
-  # - 1
-  # - 2
-
-# Normalize votes? (boolean - input must be TRUE, FALSE, or both)
-normalizeVotes:
-# - Leave blank to use the value in the template scenario
-# - TRUE
-# - FALSE
+  # A list of values to test for the number of variables sampled at split 
+  - numberOfVariablesSampled: [5,6]
+  # - Leave blank to use the value in the template scenario
+    
+  # A list of values to test for the maximum number of nodes
+  - maximumNodes:
+  # - Leave blank to use the value in the template scenario
   
-# Calculate proximity? (boolean - input must be TRUE, FALSE, or both)
-calculateProximity:
-# - Leave blank to use the value in the template scenario
-# - TRUE
-# - FALSE
+  # A list of values to test for the number of trees
+  - numberOfTrees: [1000,500]
+  # - Leave blank to use the value in the template scenario
+
+  # A list of values to test for the node size
+  - nodeSize: []
+  # - Leave blank to use the value in the template scenario
   
-# Sample with replacement? (boolean - input must be TRUE, FALSE, or both)
-sampleWithReplacement:
-# - Leave blank to use the value in the template scenario
-# - TRUE
-# - FALSE
+  # Normalize votes? (boolean - input must be true, false, or both)
+  # - Leave blank to use the value in the template scenario
+  - normalizeVotes: []
+
+  # Calculate proximity? (boolean - input must be true, false, or both)
+  # - Leave blank to use the value in the template scenario
+  - calculateProximity: []
+
+  # Sample with replacement? (boolean - input must be true, false, or both)
+  # - Leave blank to use the value in the template scenario
+  - sampleWithReplacement: []
