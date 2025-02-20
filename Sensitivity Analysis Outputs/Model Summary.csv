@@ -1,0 +1,5 @@
+ScenarioId,ScenarioName,EvaluateCovariateImportance,CalculateCasewiseImportance,NormalizeVotes,CalculateProximity,SampleWithReplacement,NumberOfVariablesSampled,MaximumNodes,NumberOfTrees,NodeSize
+36,Brewer's Sparrow: RF Variation 1,TRUE,FALSE,TRUE,FALSE,FALSE,5,NA,100,1
+37,Brewer's Sparrow: RF Variation 2,TRUE,FALSE,TRUE,FALSE,FALSE,5,NA,50,1
+38,Brewer's Sparrow: RF Variation 3,TRUE,FALSE,TRUE,FALSE,FALSE,6,NA,100,1
+39,Brewer's Sparrow: RF Variation 4,TRUE,FALSE,TRUE,FALSE,FALSE,6,NA,50,1
