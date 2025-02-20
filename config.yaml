@@ -7,24 +7,45 @@ libraryPath: "C:\\gitprojects\\A328\\Library\\wisdm-example.ssim"
 
 # SyncroSim installation location
 # - Leave blank to use default location
-ssimLocation: 
+ssimLocation: "C:\\Users\\sarah\\Downloads\\syncrosim-windows-3-0-25"
 
 # WISDM sensitivity analysis options ----
 
 # Specify the name of the SyncroSim project
 projectName: Definitions
 
+# Specify the type of model to be run 
+# - This can be one of two options:
+# - "RF" = Random Forest
+# - "BRT" = Boosted Rregression Trees
+modelType: "RF"
+
 # Specify the ID of the template scenario
 templateScenarioId: 1
+
+# Specify the directory to save sensitivity analysis outputs
+outputPath: "C:\\gitprojects\\A328\\Sensitivity Analysis Outputs"
+
+# Specify the model outputs to generate matrices for
+# - Leave blank to generate matrices for all outputs, or choose from the following:
+# - "ResponseCurves"
+# - "ResidualsPlot"
+# - "ResidualsSmoothPlot"
+# - "CalibrationPlot"
+# - "ROCAUCPlot"
+# - "AUCPRPlot"
+# - "ConfusionMatrix"
+# - "VariableImportancePlot"
+modelOutputs: []
 
 ## Boosted Regression Tree parameter values ----
 
 wisdm_BRT:
   # Choose the fitting method
-  # Leave blank to use the value in the template scenario, or:
-  # 0 = Use defaults and tuning
-  # 1 = Use values provided below
-  - fittingMethod: [1]
+  # - Leave blank to use the value in the template scenario, or:
+  # - 0 = Use defaults and tuning
+  # - 1 = Use values provided below
+  - fittingMethod: []
   
   # A list of values to test for the learning rate
   # - Leave blank to use the value in the template scenario
@@ -47,27 +68,27 @@ wisdm_BRT:
 wisdm_RF:
   # Evaluate covariate importance? (boolean - input must be true, false, or both)
   # - Leave blank to use the value in the template scenario
-  - evaluateCovariateImportance: [true]
+  - evaluateCovariateImportance: []
   
   # Calculate casewise importance? (boolean - input must be true, false, or both)
   # - Leave blank to use the value in the template scenario
   - calculateCasewiseImportance: []
 
   # A list of values to test for the number of variables sampled at split 
-  - numberOfVariablesSampled: [5,6]
   # - Leave blank to use the value in the template scenario
+  - numberOfVariablesSampled: [5,6]
     
   # A list of values to test for the maximum number of nodes
-  - maximumNodes:
   # - Leave blank to use the value in the template scenario
+  - maximumNodes:
   
   # A list of values to test for the number of trees
-  - numberOfTrees: [1000,500]
   # - Leave blank to use the value in the template scenario
+  - numberOfTrees: [100,50]
 
   # A list of values to test for the node size
-  - nodeSize: []
   # - Leave blank to use the value in the template scenario
+  - nodeSize: []
   
   # Normalize votes? (boolean - input must be true, false, or both)
   # - Leave blank to use the value in the template scenario
