@@ -64,7 +64,7 @@ if(config$modelType == "BRT"){
 
 # Check if >2 parameters were set to vary
 if(parameterCombinations %>% ncol() > 2){
-  print("Only two parameters may vary across scenarios.")
+  stop("Only two parameters may vary across scenarios.")
 } else {
   
   # Create a vector of the number of unique parameter combinations
@@ -91,44 +91,51 @@ if(parameterCombinations %>% ncol() > 2){
       # Create new scenario from template
       newScenario <- scenario(myProject, scenarioName, sourceScenario = templateScenario)
       
-      # Pull model parameters from template scenario and update with new values
-      wisdmBrtValues <- templateScenario %>% 
-        datasheet("wisdm_BRT") %>% 
-        # Convert string parameters to integer values to be able to use pivot_longer
-        mutate(FittingMethod = case_when(FittingMethod == "Use defaults and tuning" ~ 0,
-                                         FittingMethod == "Use values provided below" ~ 1)) %>% 
-        # zzz: pivot_longer converts all values to a common datatype - this will break if all values can't be converted to a common data type
-        pivot_longer(seq(1, ncol(.)), # Get all columns in the data frame
-                     names_to = "SyncroSimParameter",
-                     values_to = "SyncroSimValues") %>% 
-        mutate(Parameter = SyncroSimParameter %>% str_to_title()) %>% 
-        left_join(scenarioParameterCombinations) %>% 
-        mutate(SyncroSimValues = case_when(!is.na(Values) ~ Values,
-                                           TRUE ~ SyncroSimValues)) %>% 
-        dplyr::select(SyncroSimParameter, SyncroSimValues)
+      # Check that the template scenario contains data in it's wisdm_BRT datasheet
+      templateBrtSettings <- datasheet(templateScenario, "wisdm_BRT")
       
-      # Prep datasheet
-      wisdmBrtDatasheet <- wisdmBrtValues %>% 
-        pivot_wider(names_from = SyncroSimParameter,
-                    values_from = SyncroSimValues) %>% 
-        # Convert string parameters back to string values 
-        mutate(FittingMethod = case_when(FittingMethod == 0 ~ "Use defaults and tuning",
-                                         FittingMethod == 1 ~ "Use values provided below")) %>% 
-        as.data.frame()
-      
-      # Update wisdm_BRT datasheet
-      saveDatasheet(newScenario, wisdmBrtDatasheet, "wisdm_BRT", append = FALSE)
-      
-      # Update tabular model summary output
-      modelSummaryTable <- modelSummaryTable %>% 
-        bind_rows(tibble(
-          ScenarioId = scenarioId(newScenario),
-          ScenarioName = scenarioName,
-          FittingMethod = wisdmBrtDatasheet$FittingMethod,
-          LearningRate = wisdmBrtDatasheet$LearningRate,
-          NumberOfTrees = wisdmBrtDatasheet$NumberOfTrees,
-          BagFraction = wisdmBrtDatasheet$BagFraction,
-          MaximumTrees = wisdmBrtDatasheet$MaximumTrees))
+      if(nrow(templateBrtSettings) == 0) {
+        stop("The wisdm_BRT datasheet in the template scenario is empty. Please add values to this dataheet to act as a baseline for the sensitivity analysis.")
+      } else {
+        
+        # Pull model parameters from template scenario and update with new values
+        wisdmBrtValues <- templateBrtSettings %>% 
+          # Convert string parameters to integer values to be able to use pivot_longer
+          mutate(FittingMethod = case_when(FittingMethod == "Use defaults and tuning" ~ 0,
+                                           FittingMethod == "Use values provided below" ~ 1)) %>% 
+          # zzz: pivot_longer converts all values to a common datatype - this will break if all values can't be converted to a common data type
+          pivot_longer(seq(1, ncol(.)), # Get all columns in the data frame
+                       names_to = "SyncroSimParameter",
+                       values_to = "SyncroSimValues") %>% 
+          mutate(Parameter = SyncroSimParameter %>% str_to_title()) %>% 
+          left_join(scenarioParameterCombinations) %>% 
+          mutate(SyncroSimValues = case_when(!is.na(Values) ~ Values,
+                                             TRUE ~ SyncroSimValues)) %>% 
+          dplyr::select(SyncroSimParameter, SyncroSimValues)
+        
+        # Prep datasheet
+        wisdmBrtDatasheet <- wisdmBrtValues %>% 
+          pivot_wider(names_from = SyncroSimParameter,
+                      values_from = SyncroSimValues) %>% 
+          # Convert string parameters back to string values 
+          mutate(FittingMethod = case_when(FittingMethod == 0 ~ "Use defaults and tuning",
+                                           FittingMethod == 1 ~ "Use values provided below")) %>% 
+          as.data.frame()
+        
+        # Update wisdm_BRT datasheet
+        saveDatasheet(newScenario, wisdmBrtDatasheet, "wisdm_BRT", append = FALSE)
+        
+        # Update tabular model summary output
+        modelSummaryTable <- modelSummaryTable %>% 
+          bind_rows(tibble(
+            ScenarioId = scenarioId(newScenario),
+            ScenarioName = scenarioName,
+            FittingMethod = wisdmBrtDatasheet$FittingMethod,
+            LearningRate = wisdmBrtDatasheet$LearningRate,
+            NumberOfTrees = wisdmBrtDatasheet$NumberOfTrees,
+            BagFraction = wisdmBrtDatasheet$BagFraction,
+            MaximumTrees = wisdmBrtDatasheet$MaximumTrees)) 
+      }
       
     } else if(config$modelType == "RF"){
       
@@ -140,58 +147,65 @@ if(parameterCombinations %>% ncol() > 2){
       # Create new scenario from template
       newScenario <- scenario(myProject, scenarioName, sourceScenario = templateScenario)
       
-      # Pull model parameters from template scenario and update with new values
-      wisdmRfValues <- templateScenario %>% 
-        datasheet("wisdm_RF") %>% 
-        # zzz: pivot_longer converts all values to a common datatype - this will break if all values can't be converted to a common data type
-        pivot_longer(seq(1, ncol(.)), # Get all columns in the data frame
-                     names_to = "SyncroSimParameter",
-                     values_to = "SyncroSimValues") %>% 
-        mutate(Parameter = SyncroSimParameter %>% str_to_title()) %>% 
-        left_join(scenarioParameterCombinations) %>% 
-        mutate(SyncroSimValues = case_when(!is.na(Values) ~ Values,
-                                           TRUE ~ SyncroSimValues)) %>% 
-        dplyr::select(SyncroSimParameter, SyncroSimValues) %>% 
-        # Convert boolean parameters values back to logical data type
-        mutate(SyncroSimBooleanValues = case_when(SyncroSimParameter %in% booleanRfParameters ~ SyncroSimValues %>% as.logical,
-                                                  TRUE ~ NA))
+      # Check that the template scenario contains data in it's wisdm_BRT datasheet
+      templateRfSettings <- datasheet(templateScenario, "wisdm_RF")
       
-      # Prep boolean parameters  
-      wisdmRfBoolean <- wisdmRfValues %>% 
-        filter(SyncroSimParameter %in% booleanRfParameters) %>% 
-        dplyr::select(-SyncroSimValues) %>% 
-        pivot_wider(names_from = SyncroSimParameter,
-                    values_from = SyncroSimBooleanValues) %>% 
-        as.data.frame()
-      
-      # Prep integer parameters
-      wisdmRfInteger <- wisdmRfValues %>%
-        filter(!SyncroSimParameter %in% booleanRfParameters) %>% 
-        dplyr::select(-SyncroSimBooleanValues) %>% 
-        pivot_wider(names_from = SyncroSimParameter,
-                    values_from = SyncroSimValues) %>% 
-        as.data.frame()
-      
-      # Prep datasheet
-      wisdmRfDatasheet <- wisdmRfBoolean %>% bind_cols(wisdmRfInteger)
-      
-      # Update wisdm_RF datasheet
-      saveDatasheet(newScenario, wisdmRfDatasheet, "wisdm_RF", append = FALSE)
-      
-      # Update tabular model summary output
-      modelSummaryTable <- modelSummaryTable %>% 
-        bind_rows(tibble(
-          ScenarioId = scenarioId(newScenario),
-          ScenarioName = scenarioName,
-          EvaluateCovariateImportance = wisdmRfDatasheet$EvaluateCovariateImportance,
-          CalculateCasewiseImportance = wisdmRfDatasheet$CalculateCasewiseImportance,
-          NormalizeVotes = wisdmRfDatasheet$NormalizeVotes,
-          CalculateProximity = wisdmRfDatasheet$CalculateProximity,
-          SampleWithReplacement = wisdmRfDatasheet$SampleWithReplacement,
-          NumberOfVariablesSampled = wisdmRfDatasheet$NumberOfVariablesSampled,
-          MaximumNodes = wisdmRfDatasheet$MaximumNodes,
-          NumberOfTrees = wisdmRfDatasheet$NumberOfTrees,
-          NodeSize = wisdmRfDatasheet$NodeSize))
+      if(nrow(templateRfSettings) == 0) {
+        stop("The wisdm_RF datasheet in the template scenario is empty. Please add values to this dataheet to act as a baseline for the sensitivity analysis.")
+      } else {
+        
+        # Pull model parameters from template scenario and update with new values
+        wisdmRfValues <- templateRfSettings %>% 
+          # zzz: pivot_longer converts all values to a common datatype - this will break if all values can't be converted to a common data type
+          pivot_longer(seq(1, ncol(.)), # Get all columns in the data frame
+                       names_to = "SyncroSimParameter",
+                       values_to = "SyncroSimValues") %>% 
+          mutate(Parameter = SyncroSimParameter %>% str_to_title()) %>% 
+          left_join(scenarioParameterCombinations) %>% 
+          mutate(SyncroSimValues = case_when(!is.na(Values) ~ Values,
+                                             TRUE ~ SyncroSimValues)) %>% 
+          dplyr::select(SyncroSimParameter, SyncroSimValues) %>% 
+          # Convert boolean parameters values back to logical data type
+          mutate(SyncroSimBooleanValues = case_when(SyncroSimParameter %in% booleanRfParameters ~ SyncroSimValues %>% as.logical,
+                                                    TRUE ~ NA))
+        
+        # Prep boolean parameters  
+        wisdmRfBoolean <- wisdmRfValues %>% 
+          filter(SyncroSimParameter %in% booleanRfParameters) %>% 
+          dplyr::select(-SyncroSimValues) %>% 
+          pivot_wider(names_from = SyncroSimParameter,
+                      values_from = SyncroSimBooleanValues) %>% 
+          as.data.frame()
+        
+        # Prep integer parameters
+        wisdmRfInteger <- wisdmRfValues %>%
+          filter(!SyncroSimParameter %in% booleanRfParameters) %>% 
+          dplyr::select(-SyncroSimBooleanValues) %>% 
+          pivot_wider(names_from = SyncroSimParameter,
+                      values_from = SyncroSimValues) %>% 
+          as.data.frame()
+        
+        # Prep datasheet
+        wisdmRfDatasheet <- wisdmRfBoolean %>% bind_cols(wisdmRfInteger)
+        
+        # Update wisdm_RF datasheet
+        saveDatasheet(newScenario, wisdmRfDatasheet, "wisdm_RF", append = FALSE)
+        
+        # Update tabular model summary output
+        modelSummaryTable <- modelSummaryTable %>% 
+          bind_rows(tibble(
+            ScenarioId = scenarioId(newScenario),
+            ScenarioName = scenarioName,
+            EvaluateCovariateImportance = wisdmRfDatasheet$EvaluateCovariateImportance,
+            CalculateCasewiseImportance = wisdmRfDatasheet$CalculateCasewiseImportance,
+            NormalizeVotes = wisdmRfDatasheet$NormalizeVotes,
+            CalculateProximity = wisdmRfDatasheet$CalculateProximity,
+            SampleWithReplacement = wisdmRfDatasheet$SampleWithReplacement,
+            NumberOfVariablesSampled = wisdmRfDatasheet$NumberOfVariablesSampled,
+            MaximumNodes = wisdmRfDatasheet$MaximumNodes,
+            NumberOfTrees = wisdmRfDatasheet$NumberOfTrees,
+            NodeSize = wisdmRfDatasheet$NodeSize))
+      }
     }
   }
   
@@ -201,5 +215,5 @@ if(parameterCombinations %>% ncol() > 2){
   
   if(!file.exists(outputPath)){
     modelSummaryTable %>% write_csv(outputPath, append = FALSE)
-  } else print("A model summary file already exists in this location.")
+  } else stop("A model summary file already exists in this location.")
 }
