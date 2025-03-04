@@ -286,6 +286,6 @@ for(modelOutput in modelOutputs){
                   path = file.path(config$outputPath, outputName),
                   format = "png",
                   quality = 100)
-    } else print("The output matrix already exists. Delete the file before rewriting to disk.")
+    } else stop("The output matrix already exists. Delete the file before rewriting to disk.")
   }
 }
